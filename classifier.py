@@ -126,3 +126,14 @@ class MNISTClassifier(nn.Module):
         plt.ylabel('True Label')
         plt.title('Confusion Matrix')
         plt.show()
+
+    def predict(self, X: np.ndarray) -> torch.Tensor:
+
+        self.eval()
+        with torch.no_grad():
+            X = torch.tensor(X, dtype=torch.float32).to(self.device)
+            X = X.view(X.size(0), -1)
+            outputs = self.forward(X)
+            _, pred = torch.max(outputs, 1)
+
+        return pred
