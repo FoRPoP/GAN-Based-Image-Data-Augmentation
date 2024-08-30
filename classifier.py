@@ -37,3 +37,32 @@ class MNISTClassifier(nn.Module):
         test_loader = DataLoader(test_dataset, batch_size=1000)
         
         return train_loader, validation_loader, test_loader
+
+    def train_model(self, train_loader: DataLoader, validation_loader: DataLoader, num_epochs: int = 100) -> None:
+
+        self.train()
+        for epoch in range(num_epochs):
+            epoch_loss = 0.0
+            for batch in train_loader:
+                inputs, labels = batch
+                inputs, labels = inputs.to(self.device), labels.to(self.device)
+                inputs = inputs.view(inputs.size(0), -1)
+                self.optimizer.zero_grad()
+                outputs = self.forward(inputs)
+                loss = self.criterion(outputs, labels)
+                loss.backward()
+                self.optimizer.step()
+                epoch_loss += loss.item()
+            
+            #self.writer.add_scalar('Loss/train', epoch_loss / len(train_loader), epoch)
+            
+            if (epoch + 1) % 10 == 0:
+                print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {epoch_loss / len(train_loader):.4f}')
+
+                val_labels, val_preds = self.evaluate_model(validation_loader)
+                val_accuracy = (val_preds == val_labels).float().mean().item()
+                val_f1 = f1_score(val_labels, val_preds, average='weighted')
+                #self.writer.add_scalar('Accuracy/validation', val_accuracy * 100, epoch)
+                #self.writer.add_scalar('F1 Score/validation', val_f1, epoch)
+
+        #self.writer.close()
