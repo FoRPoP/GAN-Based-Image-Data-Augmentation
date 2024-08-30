@@ -105,3 +105,13 @@ class MNISTClassifier(nn.Module):
         print("\nClassification Report:\n", classification_report(all_labels.cpu(), predictions.cpu(), digits=4))
         
         return all_labels.cpu(), predictions.cpu()
+
+    def plot_confusion_matrix(self, y_true: torch.Tensor, y_pred: torch.Tensor) -> None:
+
+        cm = confusion_matrix(y_true, y_pred)
+        plt.figure(figsize=(10, 7))
+        sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=np.arange(10), yticklabels=np.arange(10))
+        plt.xlabel('Predicted Label')
+        plt.ylabel('True Label')
+        plt.title('Confusion Matrix')
+        plt.show()
