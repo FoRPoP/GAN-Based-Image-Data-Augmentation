@@ -12,6 +12,14 @@ class MNISTClassifier(nn.Module):
         self.to(self.device)
 
         #self.writer = SummaryWriter(log_dir='./logs')
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+
+        x = self.hidden(x)
+        x = self.output(x)
+        
+        return x
+
     def load_and_preprocess_data(self, data: Optional[np.ndarray] = None, labels: Optional[np.ndarray] = None, validation_split: float = 0.1) -> Tuple[DataLoader, DataLoader, DataLoader]:
 
         if data is not None and labels is not None:
