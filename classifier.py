@@ -1,3 +1,14 @@
+from typing import Optional, Tuple
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import DataLoader, TensorDataset, SubsetRandomSampler
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.metrics import classification_report, confusion_matrix, f1_score, precision_score, recall_score
+import seaborn as sns
+from torchvision import datasets, transforms
+
 class MNISTClassifier(nn.Module):
     def __init__(self, lr: float = 0.0002, input_dim: int = 784, output_dim: int = 10, hidden_dim: int = 300, reg: float = 0.0001, dropout_rate: float = 0.1) -> None:
 
