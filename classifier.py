@@ -66,3 +66,34 @@ class MNISTClassifier(nn.Module):
                 #self.writer.add_scalar('F1 Score/validation', val_f1, epoch)
 
         #self.writer.close()
+
+    def evaluate_model(self, test_loader: DataLoader) -> Tuple[torch.Tensor, torch.Tensor]:
+
+        self.eval()
+        predictions = []
+        all_labels = []
+        
+        with torch.no_grad():
+            for batch in test_loader:
+                inputs, labels = batch
+                inputs, labels = inputs.to(self.device), labels.to(self.device)
+                inputs = inputs.view(inputs.size(0), -1)
+                outputs = self.forward(inputs)
+                _, preds = torch.max(outputs, 1)
+                predictions.append(preds)
+                all_labels.append(labels)
+        
+        predictions = torch.cat(predictions)
+        all_labels = torch.cat(all_labels)
+        
+        accuracy = (predictions == all_labels).float().mean().item()
+        f1 = f1_score(all_labels.cpu(), predictions.cpu(), average='weighted')
+        precision = precision_score(all_labels.cpu(), predictions.cpu(), average='weighted')
+        recall = recall_score(all_labels.cpu(), predictions.cpu(), average='weighted')
+        print(f'Test Accuracy: {accuracy * 100:.2f}%')
+        print(f'F1 Score: {f1:.4f}')
+        print(f'Precision: {precision:.4f}')
+        print(f'Recall: {recall:.4f}')
+        print("\nClassification Report:\n", classification_report(all_labels.cpu(), predictions.cpu(), digits=4))
+        
+        return all_labels.cpu(), predictions.cpu()
