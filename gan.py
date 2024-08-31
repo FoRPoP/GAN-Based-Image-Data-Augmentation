@@ -139,6 +139,7 @@ class GAN(nn.Module):
         torch.save(self.discriminator.state_dict(), f'models/discriminator_epoch_{epoch}.pth')
 
     def generate_dataset(self, n, label=9):
+        self.generator.eval()
         os.makedirs('generated_data', exist_ok=True)
         
         labels = []
