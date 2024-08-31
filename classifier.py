@@ -33,12 +33,13 @@ class MNISTClassifier(nn.Module):
 
     def load_and_preprocess_data(self, train_data: Optional[np.ndarray] = None, train_labels: Optional[np.ndarray] = None, validation_split: float = 0.1) -> Tuple[DataLoader, DataLoader, DataLoader]:
 
+        transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0,), (1,))])
+
         if train_data is not None and train_labels is not None:
             train_data = torch.tensor(train_data, dtype=torch.float32).to(self.device)
             train_labels = torch.tensor(train_labels, dtype=torch.long).to(self.device)
             train_dataset = TensorDataset(train_data, train_labels)
         else:
-            transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0,), (1,))])
             train_dataset = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
             train_dataset = Subset(train_dataset, np.arange(10000))
 
