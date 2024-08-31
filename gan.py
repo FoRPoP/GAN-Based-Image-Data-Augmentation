@@ -178,22 +178,3 @@ class GAN(nn.Module):
         labels = np.array(labels)
         
         return images, labels
-
-# Funkcija za dobijanje DataLoadera za svaki broj
-def get_digit_data_loaders(batch_size=64):
-    transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize((0.5,), (0.5,))
-    ])
-
-    mnist_data = datasets.MNIST(root='./data', train=True, transform=transform, download=True)
-    data_loaders = {}
-
-    for digit in range(10):
-        digit_data = [data for data in mnist_data if data[1] == digit]
-        digit_loader = DataLoader(TensorDataset(torch.stack([x[0] for x in digit_data]), 
-                                                torch.tensor([x[1] for x in digit_data])),
-                                  batch_size=batch_size, shuffle=True)
-        data_loaders[digit] = digit_loader
-
-    return data_loaders
