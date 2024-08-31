@@ -197,16 +197,3 @@ def get_digit_data_loaders(batch_size=64):
         data_loaders[digit] = digit_loader
 
     return data_loaders
-
-# Dobijanje DataLoader-a za svaki broj
-digit_loaders = get_digit_data_loaders()
-
-# Treniranje GAN-a za svaki broj i generisanje datasetova
-for digit, loader in digit_loaders.items():
-    print(f"Training GAN for digit {digit}")
-    gan = GAN()
-    gan.to(gan.device)
-    gan.train(loader, num_epochs=50)
-    
-    # Generisanje 1000 slika za trenutni broj
-    images, labels = gan.generate_dataset(n=1000, label=digit)
