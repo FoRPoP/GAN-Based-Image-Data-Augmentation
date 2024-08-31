@@ -112,8 +112,8 @@ class GAN(nn.Module):
                 gen_loss += self.train_generator(noise)
 
                 if batch_idx % print_interval == 0:
-                    print(f'Epoch [{epoch + 1}/{num_epochs}] Batch {batch_idx}/{len(data_loader)} \
-                           Discriminator Loss: {disc_loss / (batch_idx + 1):.4f}, Generator Loss: {gen_loss / (batch_idx + 1):.4f}')
+                    print(f'Epoch [{epoch + 1}/{num_epochs}] Batch {batch_idx}/{len(data_loader)} '
+                          f'Discriminator Loss: {disc_loss / (batch_idx + 1):.4f}, Generator Loss: {gen_loss / (batch_idx + 1):.4f}')
 
             # Generisanje slika za prikazivanje
             if (epoch + 1) % 10 == 0:
@@ -144,7 +144,7 @@ class GAN(nn.Module):
 
     def generate_dataset(self, n, label=9):
         self.generator.eval()
-        os.makedirs('generated_data', exist_ok=True)
+        os.makedirs(f'generated_data/{label}', exist_ok=True)
         
         labels = []
         images = []
@@ -155,8 +155,8 @@ class GAN(nn.Module):
                 fake_image = self.generator(noise).detach().cpu()
             fake_image = fake_image.view(28, 28).numpy()
 
-            img = Image.fromarray((fake_image * 225).astype(np.uint8), mode='L')
-            img_path = f'generated_data/fake_image_{i}.png'
+            img = Image.fromarray((fake_image * 255).astype(np.uint8), mode='L')
+            img_path = f'generated_data/{label}/fake_image_{i}.png'
             img.save(img_path)
 
             transform = transforms.Compose([
@@ -168,7 +168,7 @@ class GAN(nn.Module):
             labels.append(label)
 
         # Sačuvamo sve labele u .txt fajl
-        with open('generated_data/labels.txt', 'w') as f:
+        with open(f'generated_data/{label}/labels.txt', 'w') as f:
             for label in labels:
                 f.write(f"{label}\n")
 
@@ -178,3 +178,35 @@ class GAN(nn.Module):
         labels = np.array(labels)
         
         return images, labels
+
+# Funkcija za dobijanje DataLoadera za svaki broj
+def get_digit_data_loaders(batch_size=64):
+    transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize((0.5,), (0.5,))
+    ])
+
+    mnist_data = datasets.MNIST(root='./data', train=True, transform=transform, download=True)
+    data_loaders = {}
+
+    for digit in range(10):
+        digit_data = [data for data in mnist_data if data[1] == digit]
+        digit_loader = DataLoader(TensorDataset(torch.stack([x[0] for x in digit_data]), 
+                                                torch.tensor([x[1] for x in digit_data])),
+                                  batch_size=batch_size, shuffle=True)
+        data_loaders[digit] = digit_loader
+
+    return data_loaders
+
+# Dobijanje DataLoader-a za svaki broj
+digit_loaders = get_digit_data_loaders()
+
+# Treniranje GAN-a za svaki broj i generisanje datasetova
+for digit, loader in digit_loaders.items():
+    print(f"Training GAN for digit {digit}")
+    gan = GAN()
+    gan.to(gan.device)
+    gan.train(loader, num_epochs=50)
+    
+    # Generisanje 1000 slika za trenutni broj
+    images, labels = gan.generate_dataset(n=1000, label=digit)
