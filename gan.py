@@ -155,7 +155,7 @@ class GAN(nn.Module):
                 fake_image = self.generator(noise).detach().cpu()
             fake_image = fake_image.view(28, 28).numpy()
 
-            img = Image.fromarray((fake_image * 255).astype(np.uint8), mode='L')
+            img = Image.fromarray((fake_image * 225).astype(np.uint8), mode='L')
             img_path = f'generated_data/{label}/fake_image_{i}.png'
             img.save(img_path)
 
