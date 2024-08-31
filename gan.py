@@ -142,13 +142,24 @@ class GAN(nn.Module):
         os.makedirs('generated_data', exist_ok=True)
         
         labels = []
+        images = []
+
         for i in range(n):
-            noise = torch.randn(1, self.noise_dim, device=device)
+            noise = torch.randn(1, self.noise_dim, device=self.device)
             with torch.no_grad():
                 fake_image = self.generator(noise).detach().cpu()
             fake_image = fake_image.view(28, 28).numpy()
-            
-            plt.imsave(f'generated_data/fake_image_{i}.png', fake_image, cmap='gray')
+
+            img = Image.fromarray((fake_image * 225).astype(np.uint8), mode='L')
+            img_path = f'generated_data/fake_image_{i}.png'
+            img.save(img_path)
+
+            transform = transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize((0.5,), (0.5,))
+            ])
+            img_tensor = transform(Image.open(img_path))
+            images.append(img_tensor)
             labels.append(label)
 
         # Sačuvamo sve labele u .txt fajl
@@ -179,3 +190,6 @@ gan.sample_images(epoch=50)
 
 # Generisanje dataset-a
 gan.generate_dataset(n=1000, label=9)  # Generišemo 1000 slika sa labelom 9
+        images = torch.stack(images).numpy()
+        labels = np.array(labels)
+        
