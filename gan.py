@@ -177,3 +177,4 @@ class GAN(nn.Module):
         images = torch.stack(images).numpy()
         labels = np.array(labels)
         
+        return images, labels
