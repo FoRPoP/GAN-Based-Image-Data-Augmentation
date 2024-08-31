@@ -28,7 +28,7 @@ def generate_synthetic_data() -> Tuple[list, list]:
         print(f"Training GAN for digit {digit}")
         gan = GAN()
         gan.to(gan.device)
-        gan.train(loader, num_epochs=10)
+        gan.train(loader, num_epochs=100)
 
         # Generisanje 1000 slika za trenutni broj
         images_digit, labels_digit = gan.generate_dataset(n=1000, label=digit)
