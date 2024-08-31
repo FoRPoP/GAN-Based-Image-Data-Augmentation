@@ -2,7 +2,7 @@ from typing import Optional, Tuple
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import DataLoader, TensorDataset, SubsetRandomSampler
+from torch.utils.data import DataLoader, TensorDataset, SubsetRandomSampler, Subset
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import classification_report, confusion_matrix, f1_score, precision_score, recall_score
@@ -31,18 +31,21 @@ class MNISTClassifier(nn.Module):
         
         return x
 
-    def load_and_preprocess_data(self, data: Optional[np.ndarray] = None, labels: Optional[np.ndarray] = None, validation_split: float = 0.1) -> Tuple[DataLoader, DataLoader, DataLoader]:
+    def load_and_preprocess_data(self, train_data: Optional[np.ndarray] = None, train_labels: Optional[np.ndarray] = None, validation_split: float = 0.1) -> Tuple[DataLoader, DataLoader, DataLoader]:
 
-        if data is not None and labels is not None:
-            data = torch.tensor(data, dtype=torch.float32).to(self.device)
-            labels = torch.tensor(labels, dtype=torch.long).to(self.device)
-            dataset = test_dataset = TensorDataset(data, labels)
+        if train_data is not None and train_labels is not None:
+            train_data = torch.tensor(train_data, dtype=torch.float32).to(self.device)
+            train_labels = torch.tensor(train_labels, dtype=torch.long).to(self.device)
+            train_dataset = TensorDataset(train_data, train_labels)
         else:
             transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0,), (1,))])
-            dataset = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
-            test_dataset = datasets.MNIST(root='./data', train=False, download=True, transform=transform)
+            train_dataset = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
+            train_dataset = Subset(train_dataset, np.arange(10000))
 
-        num_train = len(dataset)
+        test_dataset = datasets.MNIST(root='./data', train=False, download=True, transform=transform)
+        test_dataset = Subset(test_dataset, np.arange(10000))
+
+        num_train = len(train_dataset)
         indices = list(range(num_train))
         split = int(np.floor(validation_split * num_train))
 
@@ -51,8 +54,8 @@ class MNISTClassifier(nn.Module):
         train_idx, validation_idx = indices[split:], indices[:split]
         train_sampler, validation_sampler = SubsetRandomSampler(train_idx), SubsetRandomSampler(validation_idx)
         
-        train_loader = DataLoader(dataset, batch_size=2048, sampler=train_sampler)    
-        validation_loader = DataLoader(dataset, batch_size=1000, sampler=validation_sampler)
+        train_loader = DataLoader(train_dataset, batch_size=2048, sampler=train_sampler)    
+        validation_loader = DataLoader(train_dataset, batch_size=1000, sampler=validation_sampler)
         test_loader = DataLoader(test_dataset, batch_size=1000)
         
         return train_loader, validation_loader, test_loader
