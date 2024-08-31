@@ -3,8 +3,11 @@ import torch.nn as nn
 import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, TensorDataset
 import matplotlib.pyplot as plt
 import os
+import numpy as np
+from PIL import Image
 
 # Definisanje Generatora
 class Generator(nn.Module):
@@ -53,26 +56,28 @@ class Discriminator(nn.Module):
 class GAN(nn.Module):
     def __init__(self, noise_dim=100, img_channels=1, hidden_dim=128, lr_disc=0.0002, lr_gen=0.0002):
         super(GAN, self).__init__()
+
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.noise_dim = noise_dim
 
-        self.generator = Generator(noise_dim, img_channels, hidden_dim).to(device)
-        self.discriminator = Discriminator(img_channels, hidden_dim).to(device)
+        self.generator = Generator(noise_dim, img_channels, hidden_dim).to(self.device)
+        self.discriminator = Discriminator(img_channels, hidden_dim).to(self.device)
 
         self.d_optimizer = optim.Adam(self.discriminator.parameters(), lr=lr_disc)
         self.g_optimizer = optim.Adam(self.generator.parameters(), lr=lr_gen)
         self.loss_function = nn.BCELoss()
 
-        self.fixed_noise = torch.randn(25, noise_dim, device=device)
+        self.fixed_noise = torch.randn(25, noise_dim, device=self.device)
 
     def train_discriminator(self, real_data, fake_data):
         self.d_optimizer.zero_grad()
 
         prediction_real = self.discriminator(real_data)
-        real_target = torch.ones(real_data.size(0), 1, device=device)
+        real_target = torch.ones(real_data.size(0), 1, device=self.device)
         loss_real = self.loss_function(prediction_real, real_target)
 
         prediction_fake = self.discriminator(fake_data)
-        fake_target = torch.zeros(fake_data.size(0), 1, device=device)
+        fake_target = torch.zeros(fake_data.size(0), 1, device=self.device)
         loss_fake = self.loss_function(prediction_fake, fake_target)
 
         loss = loss_real + loss_fake
@@ -86,7 +91,7 @@ class GAN(nn.Module):
 
         fake_data = self.generator(noise_data)
         prediction = self.discriminator(fake_data)
-        target = torch.ones(noise_data.size(0), 1, device=device)
+        target = torch.ones(noise_data.size(0), 1, device=self.device)
         loss = self.loss_function(prediction, target)
 
         loss.backward()
@@ -99,9 +104,9 @@ class GAN(nn.Module):
             disc_loss = 0
             gen_loss = 0
             for batch_idx, (real_data, _) in enumerate(data_loader):
-                real_data = real_data.view(real_data.size(0), -1).to(device)
+                real_data = real_data.view(real_data.size(0), -1).to(self.device)
 
-                noise = torch.randn(real_data.size(0), self.noise_dim, device=device)
+                noise = torch.randn(real_data.size(0), self.noise_dim, device=self.device)
                 fake_data = self.generator(noise)
 
                 disc_loss += self.train_discriminator(real_data, fake_data.detach())
