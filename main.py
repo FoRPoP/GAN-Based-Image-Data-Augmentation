@@ -9,12 +9,12 @@ def main():
     custom_data_ratios_to_classifiers = {-1: None, 0: None, 0.25: None, 0.5: None, 1: None, 2: None, 4: None}
     for ratio in custom_data_ratios_to_classifiers.keys():
         print(f'Training classifier for {ratio} ratio of custom data and MNIST data.')
-        if not os.path.exists(f'saved_models/classifier_{ratio}'): 
+        if not os.path.exists(f'saved_models/classifier_{ratio}.pth'): 
             max_acc = 0
             for _ in range(5):
                 classifier = MNISTClassifier(lr=0.001, input_dim=784, output_dim=10, hidden_dim=300, dropout_rate=0.1)
                 #train_loader, validation_loader, test_loader = classifier.load_and_preprocess_data(validation_split=0.2)
-                train_loader, validation_loader, test_loader = classifier.load_and_preprocess_data(train_data=images, train_labels=labels, validation_split=0.2, custom_data_ration=ratio)
+                train_loader, validation_loader, test_loader = classifier.load_and_preprocess_data(train_data=images, train_labels=labels, validation_split=0.2, custom_data_ratio=ratio)
                 classifier.train_model(train_loader=train_loader, validation_loader=validation_loader, num_epochs=200)
 
                 _, _ = classifier.evaluate_model(test_loader)
