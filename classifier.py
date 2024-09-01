@@ -31,7 +31,7 @@ class MNISTClassifier(nn.Module):
         
         return x
 
-    def load_and_preprocess_data(self, train_data: Optional[np.ndarray] = None, train_labels: Optional[np.ndarray] = None, validation_split: float = 0.1) -> Tuple[DataLoader, DataLoader, DataLoader]:
+    def load_and_preprocess_data(self, train_data: Optional[np.ndarray] = None, train_labels: Optional[np.ndarray] = None, validation_split: float = 0.2) -> Tuple[DataLoader, DataLoader, DataLoader]:
 
         transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0,), (1,))])
 
@@ -39,12 +39,12 @@ class MNISTClassifier(nn.Module):
             train_data = torch.tensor(train_data, dtype=torch.float32).to(self.device)
             train_labels = torch.tensor(train_labels, dtype=torch.long).to(self.device)
             train_dataset = TensorDataset(train_data, train_labels)
+            validation_dataset = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
+            validation_dataset = Subset(validation_dataset, np.arange(10000))
         else:
-            train_dataset = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
-            train_dataset = Subset(train_dataset, np.arange(10000))
+            dataset = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
+            train_dataset, validation_dataset = random_split(dataset, [1-validation_split, validation_split])
 
-        validation_dataset = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
-        validation_dataset = Subset(validation_dataset, np.arange(10000))
         test_dataset = datasets.MNIST(root='./data', train=False, download=True, transform=transform)
         
         train_loader = DataLoader(train_dataset, batch_size=2048)    
