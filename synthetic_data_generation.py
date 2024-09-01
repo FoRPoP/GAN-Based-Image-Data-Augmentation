@@ -38,6 +38,9 @@ def generate_synthetic_data() -> Tuple[list, list]:
 def train_gan_for_digit(digit: int, loader: DataLoader, output_dir: str) -> None:
 
     print(f"Training GAN for digit {digit}")
+    if os.path.exists(os.path.join(output_dir, f'gan_{digit}.pth')):
+        return
+    
     gan = GAN()
     gan.to(gan.device)
     gan.train(loader, num_epochs=2000)
