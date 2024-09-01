@@ -45,15 +45,16 @@ class MNISTClassifier(nn.Module):
                 validation_dataset = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
                 validation_dataset = Subset(validation_dataset, np.arange(10000))
             else:
-                mnist_train_dataset_subset_size = 10000 / (custom_data_ratio + 1)
-                custom_train_dataset_subset_size = 10000 - mnist_train_dataset_subset_size
+                mnist_train_dataset_subset_size = int(10000 / (custom_data_ratio + 1))
+                custom_train_dataset_subset_size = int(10000 - mnist_train_dataset_subset_size)
 
                 custom_train_dataset = TensorDataset(train_data, train_labels)
                 custom_train_dataset = Subset(custom_train_dataset, np.arange(custom_train_dataset_subset_size))
 
                 mnist_dataset = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
+                mnist_dataset = TensorDataset(mnist_dataset.data.unsqueeze(1).float(), mnist_dataset.targets)
                 mnist_train_dataset, validation_dataset = random_split(mnist_dataset, [len(mnist_dataset) - 10000, 10000])
-                mnist_dataset = Subset(mnist_dataset, np.arange(mnist_train_dataset_subset_size))
+                mnist_train_dataset = Subset(mnist_train_dataset, np.arange(mnist_train_dataset_subset_size))
                 
                 train_dataset = ConcatDataset([custom_train_dataset, mnist_train_dataset])
         else:
