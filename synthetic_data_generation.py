@@ -6,6 +6,7 @@ from gan import *
 
 def generate_synthetic_data() -> Tuple[list, list]:
 
+
     images, labels = [], []
     models_output_dir = 'saved_models'
     os.makedirs(models_output_dir, exist_ok=True)
@@ -30,10 +31,22 @@ def generate_synthetic_data() -> Tuple[list, list]:
 
         images_digit, labels_digit = gan.generate_dataset(n=1000, label=digit)
 
+        # Prikaz uzoraka slika za svaku cifru
+        display_gan_samples(images_digit, digit)
+
         images.extend(images_digit)
         labels.extend(labels_digit)
 
     return images, labels
+
+def display_gan_samples(images_digit: list, digit: int, num_samples: int = 5) -> None:
+    """Prikaz uzoraka slika generisanih pomoću GAN-a."""
+    fig, axs = plt.subplots(1, num_samples, figsize=(num_samples * 2, 2))
+    for i in range(num_samples):
+        axs[i].imshow(images_digit[i].squeeze(), cmap='gray')
+        axs[i].set_title(f"Digit {digit}")
+        axs[i].axis('off')
+    plt.show()
 
 def train_gan_for_digit(digit: int, loader: DataLoader, output_dir: str) -> None:
 
