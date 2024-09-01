@@ -40,6 +40,10 @@ def generate_synthetic_data() -> Tuple[list, list]:
         images.extend(images_digit)
         labels.extend(labels_digit)
 
+    images_labels = list(zip(images, labels))
+    np.random.shuffle(images_labels)
+    images, labels = zip(*images_labels)
+
     return images, labels
 
 def display_gan_samples(images_digit: list, digit: int, num_samples: int = 5) -> None:
