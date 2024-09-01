@@ -37,14 +37,17 @@ class MNISTClassifier(nn.Module):
 
         transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0,), (1,))])
 
+        # checks if custom data should be used
         if train_data is not None and train_labels is not None and custom_data_ratio != 0:
             train_data = torch.tensor(train_data, dtype=torch.float32).to(self.device)
             train_labels = torch.tensor(train_labels, dtype=torch.long).to(self.device)
             if custom_data_ratio == -1:
+                # custom_data_ratio == -1 means that only custom data should be used
                 train_dataset = TensorDataset(train_data.squeeze(), train_labels)
                 validation_dataset = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
                 validation_dataset = Subset(validation_dataset, np.arange(10000))
             else:
+                # creating a new dataset by mixing the custom data and the MNIST dataset
                 mnist_train_dataset_subset_size = int(10000 / (custom_data_ratio + 1))
                 custom_train_dataset_subset_size = int(10000 - mnist_train_dataset_subset_size)
 
@@ -58,6 +61,7 @@ class MNISTClassifier(nn.Module):
                 
                 train_dataset = ConcatDataset([custom_train_dataset, mnist_train_dataset])
         else:
+            # using only MNIST dataset
             dataset = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
             train_dataset, validation_dataset = random_split(dataset, [len(dataset) - 10000, 10000])
             train_dataset = Subset(train_dataset, np.arange(10000))
@@ -107,6 +111,7 @@ class MNISTClassifier(nn.Module):
         predictions = []
         all_labels = []
         
+        # evaluating model
         with torch.no_grad():
             for batch in test_loader:
                 inputs, labels = batch
@@ -120,6 +125,7 @@ class MNISTClassifier(nn.Module):
         predictions = torch.cat(predictions)
         all_labels = torch.cat(all_labels)
         
+        # calculating statistics
         accuracy = (predictions == all_labels).float().mean().item()
         f1 = f1_score(all_labels.cpu(), predictions.cpu(), average='weighted')
         precision = precision_score(all_labels.cpu(), predictions.cpu(), average='weighted')
@@ -130,6 +136,7 @@ class MNISTClassifier(nn.Module):
         print(f'Recall: {recall:.4f}')
         print("\nClassification Report:\n", classification_report(all_labels.cpu(), predictions.cpu(), digits=4))
 
+        # setting accuracy for comparison purposes
         self.acc = accuracy
         return all_labels.cpu(), predictions.cpu()
 

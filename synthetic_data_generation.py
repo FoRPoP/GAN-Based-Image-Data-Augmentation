@@ -6,14 +6,15 @@ from gan import *
 
 def generate_synthetic_data() -> Tuple[list, list]:
 
-
+    # creating a dir for models to be saved
     images, labels = [], []
     models_output_dir = 'saved_models'
     os.makedirs(models_output_dir, exist_ok=True)
 
-    # Dobijanje DataLoader-a za svaki broj
+    # Getting DataLoaders for every digit
     digit_loaders = get_digit_data_loaders()
 
+    # Utilizing multiprocessing to speed up GAN training
     processes = []
     for digit, loader in digit_loaders.items():
         p = Process(target=train_gan_for_digit, args=(digit, loader, models_output_dir))
@@ -23,15 +24,17 @@ def generate_synthetic_data() -> Tuple[list, list]:
     for p in processes:
         p.join()
 
+    # Loading all of the trained GANs
     for digit in digit_loaders.keys():
         model_path = os.path.join(models_output_dir, f'gan_{digit}.pth')
 
         gan: GAN = torch.load(model_path)
         gan.to(gan.device)
 
+        # Generating a part of the dataset corresponding to the digit that the GAN was trained on
         images_digit, labels_digit = gan.generate_dataset(n=1000, label=digit)
 
-        # Prikaz uzoraka slika za svaku cifru
+        # Generating GAN image samples
         display_gan_samples(images_digit, digit)
 
         images.extend(images_digit)
@@ -50,6 +53,7 @@ def display_gan_samples(images_digit: list, digit: int, num_samples: int = 5) ->
 
 def train_gan_for_digit(digit: int, loader: DataLoader, output_dir: str) -> None:
 
+    # Training GAN only if the corresponding model doesn't already exist in the saved_models folder
     print(f"Training GAN for digit {digit}")
     if os.path.exists(os.path.join(output_dir, f'gan_{digit}.pth')):
         return
