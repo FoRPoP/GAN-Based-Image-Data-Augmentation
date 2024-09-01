@@ -57,7 +57,8 @@ class MNISTClassifier(nn.Module):
                 train_dataset = ConcatDataset([custom_train_dataset, mnist_train_dataset])
         else:
             dataset = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
-            train_dataset, validation_dataset = random_split(dataset, [10000, 10000])
+            train_dataset, validation_dataset = random_split(dataset, [len(dataset) - 10000, 10000])
+            train_dataset = Subset(train_dataset, np.arange(10000))
 
         test_dataset = datasets.MNIST(root='./data', train=False, download=True, transform=transform)
         
