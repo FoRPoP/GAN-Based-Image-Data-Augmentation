@@ -1,8 +1,12 @@
 from classifier import *
 from gan import *
 from synthetic_data_generation import *
+from data_analysis import *
 
 def main():
+
+    analyze_class_distribution()
+    calc_avg_pixel_brightness()
 
     images, labels = generate_synthetic_data()
 
