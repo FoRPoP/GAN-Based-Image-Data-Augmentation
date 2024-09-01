@@ -8,3 +8,4 @@ data/MNIST/raw/train-labels-idx1-ubyte
 /generated_data
 /images
 /models
+/.ipynb_checkpoints
