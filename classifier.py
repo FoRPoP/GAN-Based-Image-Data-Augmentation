@@ -33,7 +33,7 @@ class MNISTClassifier(nn.Module):
         
         return x
 
-    def load_and_preprocess_data(self, train_data: Optional[np.ndarray] = None, train_labels: Optional[np.ndarray] = None, validation_split: float = 0.2, custom_data_ratio: float = -1) -> Tuple[DataLoader, DataLoader, DataLoader]:
+    def load_and_preprocess_data(self, train_data: Optional[list] = None, train_labels: Optional[list] = None, validation_split: float = 0.2, custom_data_ratio: float = -1) -> Tuple[DataLoader, DataLoader, DataLoader]:
 
         transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0,), (1,))])
 
