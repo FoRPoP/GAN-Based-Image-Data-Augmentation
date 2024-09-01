@@ -11,11 +11,31 @@ Ovaj projekat obuhvata razvoj Generativne Adverzalne Mreže (GAN) za generisanje
 -  Liu, L., Hu, H. "Exploring GANs for Data Augmentation in MNIST Digit Classification." *CS229 Machine Learning Final Project Report*, Stanford University, 2020. Dostupno na: [https://cs229.stanford.edu/proj2020spr/report/Liu_Hu.pdf](https://cs229.stanford.edu/proj2020spr/report/Liu_Hu.pdf)
 - **Materijali sa vežbi**: [Materijali sa vežbi - Matf ML 2024](https://github.com/matf-ml/materijali-sa-vezbi-2024)
 
-## Pokretanje
+## Instalacija i pokretanje
+Prvo, klonirajte repozitorijum:
+
+```bash
+git clone https://github.com/FoRPoP/GAN-Based-Image-Data-Augmentation.git
+cd GAN-Based-Image-Data-Augmentation 
+```
+
+Zatim instalirajte potrebne pakete:
+
+```bash
+pip install matplotlib numpy torch torchvision jupyter 
+```
+Projekat možete pokrenuti na sledeći način:
+1. Pokretanje glavnog Python fajla:
+```bash
+python main.py
+```
+2. Pokretanje Jupyter Notebook-a:
+```bash
+jupyter notebook
+```
 Za pokretanje projekta potrebno je pratiti 1.ipynb jupyter notebook fajl.
 Projekat koristi unapred istrenirane GAN i klasifikator modele.
 Za ponovno treniranje modela potrebno je izbrisati zeljenje modele is saved_models foldera i ponovo pratiti 1.ipynb jupyter notebook fajl. Samo izbrisani modeli ce biti ponovo trenirani.
-
 ## Članovi Tima
 - Marija Božić
 - Ognjen Popović
