@@ -42,5 +42,12 @@ def main():
         true_labels, pred_labels = classifier.evaluate_model(test_loader)
         classifier.plot_confusion_matrix(true_labels, pred_labels)
 
+    plt.figure(figsize=(10, 6))
+    plt.bar(custom_data_ratios_to_classifiers.keys(), [model.acc for model in custom_data_ratios_to_classifiers.values()], color='skyblue')
+    plt.title('Model Accuracy Comparison')
+    plt.xlabel('Ratio of custom data and MNIST data')
+    plt.ylabel('Accuracy')
+    plt.show()
+
 if __name__ == "__main__":
     main()
