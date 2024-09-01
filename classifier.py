@@ -2,7 +2,7 @@ from typing import Optional, Tuple
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import DataLoader, TensorDataset, SubsetRandomSampler, Subset, random_split
+from torch.utils.data import DataLoader, TensorDataset, Subset, random_split, ConcatDataset
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import classification_report, confusion_matrix, f1_score, precision_score, recall_score
@@ -22,6 +22,8 @@ class MNISTClassifier(nn.Module):
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.to(self.device)
 
+        self.acc = 0
+
         #self.writer = SummaryWriter(log_dir='./logs')
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -31,16 +33,28 @@ class MNISTClassifier(nn.Module):
         
         return x
 
-    def load_and_preprocess_data(self, train_data: Optional[np.ndarray] = None, train_labels: Optional[np.ndarray] = None, validation_split: float = 0.2) -> Tuple[DataLoader, DataLoader, DataLoader]:
+    def load_and_preprocess_data(self, train_data: Optional[np.ndarray] = None, train_labels: Optional[np.ndarray] = None, validation_split: float = 0.2, custom_data_ratio: float = -1) -> Tuple[DataLoader, DataLoader, DataLoader]:
 
         transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0,), (1,))])
 
-        if train_data is not None and train_labels is not None:
+        if train_data is not None and train_labels is not None and custom_data_ratio != 0:
             train_data = torch.tensor(train_data, dtype=torch.float32).to(self.device)
             train_labels = torch.tensor(train_labels, dtype=torch.long).to(self.device)
-            train_dataset = TensorDataset(train_data, train_labels)
-            validation_dataset = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
-            validation_dataset = Subset(validation_dataset, np.arange(10000))
+            if custom_data_ratio == -1:
+                train_dataset = TensorDataset(train_data, train_labels)
+                validation_dataset = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
+                validation_dataset = Subset(validation_dataset, np.arange(10000))
+            else:
+                mnist_train_dataset_subset_size = 10000 / (custom_data_ratio + 1)
+                custom_train_dataset_subset_size = 10000 - mnist_train_dataset_subset_size
+
+                custom_train_dataset = TensorDataset(train_data, train_labels)
+                custom_train_dataset = Subset(custom_train_dataset, np.arange(custom_train_dataset_subset_size))
+
+                mnist_dataset = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
+                mnist_train_dataset, validation_dataset = random_split(mnist_dataset, [mnist_train_dataset_subset_size, 10000])
+                
+                train_dataset = ConcatDataset([custom_train_dataset, mnist_train_dataset])
         else:
             dataset = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
             train_dataset, validation_dataset = random_split(dataset, [1-validation_split, validation_split])
@@ -77,6 +91,8 @@ class MNISTClassifier(nn.Module):
                 val_labels, val_preds = self.evaluate_model(validation_loader)
                 val_accuracy = (val_preds == val_labels).float().mean().item()
                 val_f1 = f1_score(val_labels, val_preds, average='weighted')
+                print(f'Accuracy: {val_accuracy * 100}')
+                print(f'F1: {val_f1}')
                 #self.writer.add_scalar('Accuracy/validation', val_accuracy * 100, epoch)
                 #self.writer.add_scalar('F1 Score/validation', val_f1, epoch)
 
@@ -110,7 +126,8 @@ class MNISTClassifier(nn.Module):
         print(f'Precision: {precision:.4f}')
         print(f'Recall: {recall:.4f}')
         print("\nClassification Report:\n", classification_report(all_labels.cpu(), predictions.cpu(), digits=4))
-        
+
+        self.acc = accuracy
         return all_labels.cpu(), predictions.cpu()
 
     def plot_confusion_matrix(self, y_true: torch.Tensor, y_pred: torch.Tensor) -> None:
