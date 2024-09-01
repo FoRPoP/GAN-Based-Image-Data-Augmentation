@@ -22,7 +22,7 @@ cd GAN-Based-Image-Data-Augmentation
 Zatim instalirajte potrebne pakete:
 
 ```bash
-pip install matplotlib numpy torch torchvision jupyter 
+pip install matplotlib numpy torch torchvision jupyter seaborn sklearn scikit-learn
 ```
 Projekat možete pokrenuti na sledeći način:
 1. Pokretanje glavnog Python fajla:
