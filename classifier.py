@@ -2,7 +2,7 @@ from typing import Optional, Tuple
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import DataLoader, TensorDataset, SubsetRandomSampler, Subset
+from torch.utils.data import DataLoader, TensorDataset, SubsetRandomSampler, Subset, random_split
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import classification_report, confusion_matrix, f1_score, precision_score, recall_score
@@ -43,20 +43,12 @@ class MNISTClassifier(nn.Module):
             train_dataset = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
             train_dataset = Subset(train_dataset, np.arange(10000))
 
+        validation_dataset = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
+        validation_dataset = Subset(validation_dataset, np.arange(10000))
         test_dataset = datasets.MNIST(root='./data', train=False, download=True, transform=transform)
-        test_dataset = Subset(test_dataset, np.arange(10000))
-
-        num_train = len(train_dataset)
-        indices = list(range(num_train))
-        split = int(np.floor(validation_split * num_train))
-
-        np.random.shuffle(indices)
-
-        train_idx, validation_idx = indices[split:], indices[:split]
-        train_sampler, validation_sampler = SubsetRandomSampler(train_idx), SubsetRandomSampler(validation_idx)
         
-        train_loader = DataLoader(train_dataset, batch_size=2048, sampler=train_sampler)    
-        validation_loader = DataLoader(train_dataset, batch_size=1000, sampler=validation_sampler)
+        train_loader = DataLoader(train_dataset, batch_size=2048)    
+        validation_loader = DataLoader(validation_dataset, batch_size=1000)
         test_loader = DataLoader(test_dataset, batch_size=1000)
         
         return train_loader, validation_loader, test_loader
