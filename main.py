@@ -31,7 +31,7 @@ def main():
         print(f'Best classifier accuracy: {custom_data_ratios_to_classifiers[ratio].acc}.')
 
     for ratio, classifier in custom_data_ratios_to_classifiers.items():
-        print(f'Classifier statistic for {ratio} of custom data.')
+        print(f'Classifier statistic for {ratio} ratio of custom data and MNIST data.')
         true_labels, pred_labels = classifier.evaluate_model(test_loader)
         classifier.plot_confusion_matrix(true_labels, pred_labels)
 
