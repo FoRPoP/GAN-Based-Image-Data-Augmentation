@@ -12,6 +12,7 @@ def main():
     images, labels = generate_synthetic_data()
 
     # Going through the following ratios where the ratio = len(custom data) / len(mnist data)
+    # Ratio of -1 means that only the custom data was used
     custom_data_ratios_to_classifiers = {-1: None, 0: None, 0.25: None, 0.5: None, 1: None, 2: None, 4: None}
     for ratio in custom_data_ratios_to_classifiers.keys():
         print(f'Training classifier for {ratio} ratio of custom data and MNIST data.')
@@ -36,17 +37,29 @@ def main():
             custom_data_ratios_to_classifiers[ratio] = torch.load(f'saved_models/classifier_{ratio}.pth')
         print(f'Best classifier accuracy: {custom_data_ratios_to_classifiers[ratio].acc}.')
 
+    # Getting a test loader for a test dataset
+    transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0,), (1,))])
+    test_dataset = datasets.MNIST(root='./data', train=False, download=True, transform=transform)
+    test_loader = DataLoader(test_dataset, batch_size=1000)
+
     # Going through all of the trained classifiers and printing their statistics and the confusion matrix
     for ratio, classifier in custom_data_ratios_to_classifiers.items():
         print(f'Classifier statistic for {ratio} ratio of custom data and MNIST data.')
         true_labels, pred_labels = classifier.evaluate_model(test_loader)
         classifier.plot_confusion_matrix(true_labels, pred_labels)
 
+    # Plotting the comparison graph
+    ratios = [str(ratio) for ratio in custom_data_ratios_to_classifiers.keys()]
+    accs = [model.acc for model in custom_data_ratios_to_classifiers.values()]
+
     plt.figure(figsize=(10, 6))
-    plt.bar(custom_data_ratios_to_classifiers.keys(), [model.acc for model in custom_data_ratios_to_classifiers.values()], color='skyblue')
+    plt.bar(ratios, accs, color='skyblue')
     plt.title('Model Accuracy Comparison')
     plt.xlabel('Ratio of custom data and MNIST data')
     plt.ylabel('Accuracy')
+
+    plt.yticks(np.arange(0, max(accs) + 0.1, 0.1))
+
     plt.show()
 
 if __name__ == "__main__":
